@@ -1,0 +1,32 @@
+# systemd-юнит для автозапуска бота Penny (Kids360).
+# Установка:
+#   sudo cp deploy/kids360-bot.service /etc/systemd/system/kids360-bot.service
+#   (при необходимости отредактируйте User, WorkingDirectory и путь к venv)
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now kids360-bot
+#   sudo systemctl status kids360-bot
+
+[Unit]
+Description=Kids360 Support Bot (Penny 2.0) — FastAPI/uvicorn
+After=network.target
+
+[Service]
+# Пользователь, от которого крутится сервис (замените на своего, не root).
+User=ubuntu
+Group=ubuntu
+
+# Корень проекта на сервере (где лежат папка app/ и файл .env).
+WorkingDirectory=/home/ubuntu/kids360-support-bot
+
+# Ключ OpenAI и MODEL берутся из .env (в git не коммитится).
+EnvironmentFile=/home/ubuntu/kids360-support-bot/.env
+
+# Запуск uvicorn из venv на локальном порту (наружу смотрит nginx).
+ExecStart=/home/ubuntu/kids360-support-bot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Перезапуск при падении.
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

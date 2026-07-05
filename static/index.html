@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penny 2.0 — AI-поддержка Kids360 (возврат средств)</title>
+  <style>
+    :root {
+      /* Акцент «витрины» — синий, как в чате Penny */
+      --brand: #0a84ff;
+      --brand-soft: #e4f0ff;
+      --ink: #22232a;
+      --muted: #6b6c78;
+      --line: #e9e9f1;
+      --bg: #ffffff;
+      --bg-soft: #f7f7fb;
+      /* Точные цвета чата Penny (из скриншотов) */
+      --penny-blue: #0a84ff;
+      --penny-gray: #f1f1f3;
+      --penny-ink: #1c1c1e;
+      --radius: 16px;
+      --shadow: 0 8px 30px rgba(20, 60, 120, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── Верхняя навигация ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 58px; }
+    .topbar .logo { font-weight: 700; font-size: 16px; white-space: nowrap; }
+    .topbar .logo b { color: var(--brand); }
+    .topbar nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+    .topbar nav a {
+      color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500;
+      padding: 7px 12px; border-radius: 999px;
+    }
+    .topbar nav a:hover { background: var(--brand-soft); color: var(--brand); }
+    .topbar nav a.cta { background: var(--brand); color: #fff; }
+    .topbar nav a.gh { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); color: var(--penny-ink); }
+    .topbar nav a.gh:hover { background: var(--bg-soft); color: var(--penny-ink); }
+    .topbar nav a.gh svg { width: 15px; height: 15px; fill: currentColor; }
+
+    /* ── Hero ── */
+    .hero { padding: 56px 0 40px; text-align: center; }
+    .hero .tag {
+      display: inline-block; background: var(--brand-soft); color: var(--brand);
+      font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 999px; margin-bottom: 18px;
+    }
+    .hero h1 { font-size: 34px; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .hero p { color: var(--muted); font-size: 17px; max-width: 620px; margin: 0 auto; }
+
+    /* ── Секции ── */
+    section { padding: 40px 0; border-top: 1px solid var(--line); }
+    .kicker { color: var(--brand); font-weight: 700; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+    h2 { font-size: 26px; letter-spacing: -0.02em; margin: 6px 0 18px; }
+    h3 { font-size: 18px; margin: 26px 0 10px; }
+    p, li { font-size: 16px; }
+    .lead { color: var(--muted); font-size: 17px; margin-bottom: 8px; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    a { color: var(--brand); }
+
+    .cards { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
+    @media (min-width: 640px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }
+    .card {
+      background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 16px; border-top: 3px solid var(--brand);
+    }
+    .card .p { font-weight: 700; color: var(--brand); font-size: 13px; margin-bottom: 6px; }
+    .card h4 { font-size: 15px; margin-bottom: 6px; }
+    .card p { font-size: 14px; color: var(--muted); }
+
+    .shots { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 20px 0; }
+    @media (min-width: 640px) { .shots { grid-template-columns: 1fr 1fr 1fr; } }
+    figure { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+    figure img { width: 100%; display: block; }
+    figcaption { font-size: 12.5px; color: var(--muted); padding: 10px 12px; }
+
+    .callout {
+      background: #fff8e6; border: 1px solid #ffe3a3; border-radius: 14px;
+      padding: 14px 16px; margin: 18px 0; font-size: 15px;
+    }
+    .callout b { color: #8a6d00; }
+
+    pre.flow {
+      background: #0f1020; color: #e6e6f0; border-radius: 14px; padding: 18px;
+      overflow-x: auto; font-size: 12.5px; line-height: 1.5;
+      font-family: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+      margin: 16px 0;
+    }
+
+    /* ── Схема диалога: вертикальный степпер в родном стиле ── */
+    .flow2 { list-style: none; padding: 0; margin: 16px 0 0; }
+    .fstep { display: grid; grid-template-columns: 32px 1fr; gap: 14px; }
+    .fstep-rail { display: flex; flex-direction: column; align-items: center; }
+    .fstep-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff;
+                 font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .fstep-dot.edge { background: var(--ink); }
+    .fstep-line { flex: 1; width: 2px; background: var(--line); margin: 4px 0; min-height: 14px; }
+    .fstep:last-child .fstep-line { display: none; }
+    .fstep-body { padding-bottom: 18px; }
+    .fstep:last-child .fstep-body { padding-bottom: 0; }
+    .fstep-title { font-weight: 700; font-size: 15.5px; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .fstep-badge { font-size: 11.5px; font-weight: 700; color: var(--brand); background: var(--brand-soft); padding: 2px 9px; border-radius: 999px; }
+    .fstep-desc { font-size: 14.5px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+    .fstep-sub { font-size: 13px; color: var(--muted); margin-top: 3px; opacity: .85; }
+    .fbranch { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; border-left: 2px solid var(--brand-soft); padding-left: 12px; }
+    .fbranch-row { display: flex; gap: 8px; align-items: baseline; font-size: 14px; color: var(--ink); line-height: 1.45; }
+    .fchip { flex-shrink: 0; display: inline-block; background: var(--penny-gray); color: var(--penny-ink);
+             font-weight: 600; font-size: 12.5px; padding: 2px 9px; border-radius: 6px; white-space: nowrap; }
+    .fnote { margin-top: 10px; font-size: 13.5px; color: var(--muted); background: var(--bg-soft);
+             border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; line-height: 1.45; }
+    .fnote b { color: var(--ink); }
+    .fstep-dot.st { font-size: 11.5px; }
+
+    /* ── Проектирование: подблоки ── */
+    .d-block { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin: 18px 0; }
+    .d-block > h3:first-child { margin-top: 0; margin-bottom: 6px; }
+    .d-lead { color: var(--muted); font-size: 15px; margin-bottom: 14px; line-height: 1.5; }
+    .d-rule { border-left: 3px solid var(--brand); background: var(--bg-soft); border-radius: 0 10px 10px 0; padding: 11px 14px; margin: 10px 0; }
+    .d-rule .rule { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+    .kv { font-size: 14px; margin-top: 5px; line-height: 1.45; }
+    .kv .k { font-weight: 700; }
+    .kv.pos .k { color: var(--brand); }
+    .kv.neg .k { color: #c0392b; }
+    .d-key { background: var(--brand-soft); border: 1px solid #cfe4ff; border-radius: 12px; padding: 14px 16px; margin: 14px 0; font-size: 14.5px; line-height: 1.55; }
+    .d-key b { color: #0060c0; }
+    .d-tablewrap { overflow-x: auto; margin: 6px 0 4px; }
+    .d-tablewrap table.map { min-width: 640px; }
+    table.map { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
+    table.map th, table.map td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.map th { color: var(--muted); font-weight: 600; }
+
+    .edge { border-left: 3px solid var(--brand); background: var(--bg-soft); border-radius: 0 12px 12px 0; padding: 12px 16px; margin: 12px 0; }
+    .edge b { display: block; margin-bottom: 4px; }
+
+    /* ════════════════ АУДИТ: карточки веток ════════════════ */
+    .au-lead { color: var(--muted); font-size: 17px; margin: 8px 0 22px; }
+    .au-cards { display: flex; flex-direction: column; gap: 16px; }
+    .au-card { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+    .au-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .au-num { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff;
+              font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .au-title { font-size: 18px; font-weight: 700; margin-right: auto; }
+    .au-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .au-tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+    .au-tag.logic { background: #e7eefc; color: #2f5fbf; }
+    .au-tag.content { background: #fcefda; color: #b5761a; }
+    .au-tag.ai { background: var(--brand); color: #fff; box-shadow: 0 2px 8px rgba(10,132,255,.35); }
+    .au-facets { margin-top: 12px; }
+    .au-facet { display: grid; grid-template-columns: 138px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+    .au-facet:first-child { border-top: none; padding-top: 2px; }
+    .au-facet-k { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--muted); padding-top: 3px; }
+    .au-facet-k.break { color: #c0392b; }
+    .au-facet-k.cause { color: var(--brand); }
+    .au-facet-v { font-size: 14.5px; line-height: 1.5; }
+    @media (max-width: 560px) { .au-facet { grid-template-columns: 1fr; gap: 2px; } .au-facet-k { padding-top: 0; } }
+    .au-thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 14px 2px 2px; }
+    .au-thumb { height: 128px; width: auto; border-radius: 8px; border: 1px solid var(--line);
+                cursor: zoom-in; flex-shrink: 0; background: #fff; transition: border-color .15s; }
+    .au-thumb:hover { border-color: var(--brand); }
+    .au-final { margin-top: 24px; background: linear-gradient(135deg, #0a84ff, #3f9bff); color: #fff;
+                border-radius: 18px; padding: 24px; box-shadow: var(--shadow); }
+    .au-final h3 { color: #fff; margin: 0 0 10px; font-size: 20px; }
+    .au-final p { font-size: 15.5px; line-height: 1.6; margin: 0; }
+    .au-final b { color: #fff; }
+    .au-final h3 { text-wrap: balance; }
+    .au-solution { margin-top: 16px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; padding: 14px 16px; font-size: 15.5px; line-height: 1.6; }
+    .au-solution-label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin-bottom: 6px; }
+    /* Лайтбокс */
+    .lb { position: fixed; inset: 0; background: rgba(15,16,32,.9); display: none;
+          align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+    .lb.open { display: flex; }
+    .lb img { max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .lb-close { position: absolute; top: 14px; right: 20px; color: #fff; font-size: 36px;
+                line-height: 1; cursor: pointer; background: none; border: none; z-index: 2; }
+    .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px;
+              border-radius: 50%; border: none; background: rgba(255,255,255,.14); color: #fff;
+              font-size: 30px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
+    .lb-nav:hover { background: rgba(255,255,255,.26); }
+    .lb-prev { left: 16px; }
+    .lb-next { right: 16px; }
+    .lb-nav[hidden] { display: none; }
+    .lb-count { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+                color: #fff; font-size: 13.5px; background: rgba(0,0,0,.45); padding: 4px 12px; border-radius: 999px; }
+    .lb-count[hidden] { display: none; }
+
+    /* ════════════════ ЧАТ PENNY (реплика 1:1 по скриншотам) ════════════════ */
+    .phone {
+      max-width: 420px; margin: 22px auto 0;
+      border: 1px solid var(--line); border-radius: 26px; overflow: hidden;
+      box-shadow: var(--shadow); background: #fff;
+      display: flex; flex-direction: column; height: 640px;
+    }
+    /* Шапка чата */
+    .pn-head {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+      background: #fff; border-bottom: 1px solid #efeff2;
+    }
+    .pn-round {
+      width: 38px; height: 38px; border-radius: 50%; background: #f0f0f2;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; color: #3a3a3c;
+      flex-shrink: 0; border: none; cursor: default;
+    }
+    .pn-avatars { display: flex; align-items: center; }
+    .pn-avatars span {
+      width: 30px; height: 30px; border-radius: 50%; margin-left: -8px;
+      background: #dcdce4; border: 2px solid #fff; display: flex; align-items: center;
+      justify-content: center; font-size: 15px;
+    }
+    .pn-avatars span:first-child { margin-left: 0; }
+    .pn-title { font-weight: 700; font-size: 18px; color: var(--penny-ink); }
+    .pn-head .spacer { margin-left: auto; }
+
+    /* Лента */
+    .pn-msgs {
+      flex: 1; overflow-y: auto; padding: 14px 14px 6px; background: #fff;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .pn-sub { text-align: center; color: #9a9aa2; font-size: 13px; margin: 4px 0 8px; }
+
+    .pn-row { display: flex; flex-direction: column; max-width: 86%; }
+    .pn-row.user { align-self: flex-end; align-items: flex-end; }
+    .pn-row.bot  { align-self: flex-start; align-items: flex-start; }
+
+    .pn-bot-name { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .pn-bot-name .ava {
+      width: 22px; height: 22px; border-radius: 50%; background: #eaeaf0;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
+    }
+    .pn-bot-name b { font-size: 14px; color: var(--penny-ink); }
+    .pn-bot-name .dotsep { color: #b7b7bf; }
+    .pn-bot-name .role { font-size: 14px; color: var(--penny-ink); }
+
+    .pn-bubble {
+      font-size: 15.5px; line-height: 1.45; padding: 10px 14px; border-radius: 20px;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    .pn-row.bot  .pn-bubble { background: var(--penny-gray); color: var(--penny-ink); border-top-left-radius: 8px; }
+    .pn-row.user .pn-bubble { background: var(--penny-blue); color: #fff; border-top-right-radius: 8px; }
+    .pn-bubble img.shot { max-width: 190px; border-radius: 12px; display: block; }
+
+    /* Чипы-подсказки (белые пилюли с синим текстом) */
+    .pn-chips { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 2px; }
+    .pn-chip {
+      background: #fff; border: 1px solid #e6e6ee; color: var(--penny-blue);
+      font-size: 14.5px; font-weight: 500; padding: 10px 16px; border-radius: 999px;
+      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.05); text-align: right;
+    }
+    .pn-chip:hover { background: #f6f9ff; }
+    .pn-chip:disabled { opacity: .5; cursor: default; }
+
+    /* Карточка распознанного чека */
+    .pn-receipt {
+      background: #fff; border: 1px solid #e6e4f7; border-left: 4px solid var(--brand);
+      border-radius: 14px; padding: 12px 14px; font-size: 14px; max-width: 100%;
+    }
+    .pn-receipt .t { font-weight: 700; color: var(--brand); font-size: 13px; margin-bottom: 8px; }
+    .pn-receipt .r { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+    .pn-receipt .r .k { color: var(--muted); }
+    .pn-receipt .r .v { font-weight: 600; text-align: right; }
+    .pn-receipt .c { margin-top: 8px; font-size: 12px; color: var(--muted); }
+    .op-card { border-left-color: #34c759; }
+    .op-card .t .demo { font-size: 10px; font-weight: 700; color: #fff; background: #9a9aa2; padding: 1px 6px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+    .op-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .op-btn { border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .op-btn.approve { background: var(--penny-blue); color: #fff; }
+    .op-btn.reject { background: #f1f1f3; color: #3a3a3c; }
+
+    .pn-typing .pn-bubble { color: #8a8a92; font-style: italic; }
+
+    .pn-escalation {
+      align-self: stretch; background: #fff8e6; border: 1px solid #ffe3a3; color: #8a6d00;
+      border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin: 2px 0;
+    }
+
+    /* Поле ввода */
+    .pn-input {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      border-top: 1px solid #efeff2; background: #fff;
+    }
+    .pn-attach {
+      flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+      background: var(--brand-soft); color: var(--brand); border: none;
+      border-radius: 999px; padding: 10px 14px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .pn-attach:hover { background: #d3e6ff; }
+    .pn-attach:disabled { opacity: .5; cursor: default; }
+    .pn-field {
+      flex: 1; display: flex; align-items: center; background: #f4f4f6;
+      border: 1px solid #e8e8ee; border-radius: 999px; padding: 4px 6px 4px 16px;
+    }
+    .pn-field textarea {
+      flex: 1; border: none; background: transparent; resize: none; outline: none;
+      font-family: inherit; font-size: 15.5px; max-height: 96px; padding: 7px 0; color: var(--penny-ink);
+    }
+    .pn-send {
+      width: 38px; height: 38px; border-radius: 50%; border: none; flex-shrink: 0;
+      background: var(--penny-blue); color: #fff; font-size: 17px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pn-send:disabled { opacity: .4; cursor: default; }
+
+    /* Два зеркальных окна: клиент + оператор */
+    .duo { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
+    .duo-col { flex: 1 1 380px; max-width: 440px; min-width: 300px; }
+    .duo .phone { max-width: 100%; margin: 0; }
+    .duo-label { text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+    .op-status { font-size: 12px; color: #34c759; font-weight: 600; }
+    .op-sys { align-self: center; font-size: 12.5px; color: var(--muted); padding: 2px 8px; }
+    /* Десктоп: два окна строго рядом, в один экран, без изменения масштаба.
+       Ломаем ограничение .wrap (780px) и центрируем блок по вьюпорту. */
+    @media (min-width: 960px) {
+      .duo {
+        flex-wrap: nowrap;
+        gap: 24px;
+        width: 900px; max-width: 94vw;
+        margin-left: 50%; transform: translateX(-50%);
+      }
+      .duo-col { flex: 0 0 420px; max-width: 420px; min-width: 0; }
+    }
+
+    .proto-note { color: var(--muted); font-size: 13.5px; text-align: center; margin-top: 14px; }
+    .proto-note code { background: var(--bg-soft); padding: 2px 6px; border-radius: 6px; }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 14px; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ Навигация ═══════════ -->
+  <div class="topbar">
+    <div class="wrap">
+      <div class="logo"><b>Penny 2.0</b> · поддержка Kids360</div>
+      <nav>
+        <a href="#audit">Аудит</a>
+        <a href="#design">Проектирование</a>
+        <a href="https://github.com/fedorkoshcheevone-sys/kids360-support-bot" target="_blank" rel="noopener" class="gh" aria-label="Открыть репозиторий на GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+        <a href="#prototype" class="cta">Потрогать бота ↓</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ═══════════ Hero ═══════════ -->
+    <div class="hero">
+      <div class="tag">Тестовое задание для Kids360</div>
+      <h1>AI-решение для автоматического возврата средств</h1>
+      <p>Родитель, с которого дважды списали за детскую подписку, приходит расстроенным.
+         Ниже — аудит текущего бота, проектирование новой AI-ветки и живой прототип,
+         которого можно потрогать прямо на этой странице.</p>
+    </div>
+
+    <!-- ═══════════ Часть 1 — Аудит ═══════════ -->
+    <section id="audit">
+      <div class="kicker">Часть 1</div>
+      <h2>Аудит текущего чат-бота</h2>
+      <p class="au-lead">Я прошёл чат-бот поддержки Kids360 (Penny · AI Agent) как обычный пользователь: вход в чат и три ветки — настройка аккаунта, функции приложения, оплата и возврат. Ниже — что ломается в каждой ветке и почему, а в конце — какую ветку я выбрал главной и почему именно её.</p>
+
+      <div class="au-cards">
+
+        <article class="au-card">
+          <div class="au-head">
+            <span class="au-num">0</span>
+            <span class="au-title">Вход в чат</span>
+            <span class="au-tags"><span class="au-tag logic">Логика</span></span>
+          </div>
+          <div class="au-facets">
+            <div class="au-facet"><div class="au-facet-k">Что происходит</div><div class="au-facet-v">Приветствие Penny и меню из пяти кнопок. Иногда вместо меню — единственная кнопка «Нажмите здесь чтобы продолжить», то есть лишний пустой шаг ещё до первого вопроса.</div></div>
+            <div class="au-facet"><div class="au-facet-k break">Где ломается</div><div class="au-facet-v">На стартовом экране среди кнопок есть «Вернуться в предыдущий раздел» — хотя возвращаться некуда. Нажатие ничего не делает: пользователь остаётся на том же меню.</div></div>
+            <div class="au-facet"><div class="au-facet-k cause">Корневая причина</div><div class="au-facet-v">Логика: кнопка «назад» рендерится безусловно, без проверки, где пользователь находится в дереве. Навигационный каркас не выверен ещё до начала диалога.</div></div>
+          </div>
+        </article>
+
+        <article class="au-card">
+          <div class="au-head">
+            <span class="au-num">1</span>
+            <span class="au-title">Настройка аккаунта ребёнка и родителя</span>
+            <span class="au-tags"><span class="au-tag content">Контент</span><span class="au-tag logic">Логика</span></span>
+          </div>
+          <div class="au-facets">
+            <div class="au-facet"><div class="au-facet-k">Что происходит</div><div class="au-facet-v">Спросил «Как добавить второго ребёнка». Бот выдаёт верную по сути инструкцию, но в формате простыни: текст вперемешку с огромными скриншотами, шаги визуально не разделены, читать тяжело. В одном и том же сообщении детское приложение названо по-разному: «Ali360» в тексте и «Alli360» на скриншоте и кнопке — родитель пойдёт искать его в сторе с неверным именем.</div></div>
+            <div class="au-facet"><div class="au-facet-k break">Где ломается</div><div class="au-facet-v">Навигация в конце ответов непредсказуема: после инструкции «добавить ребёнка» кнопка ведёт «в предыдущий раздел» (корректно), а после инструкции «удалить профиль» — «в главное меню», сбрасывая пользователя в начало дерева. Логика каркаса не выстроена.</div></div>
+            <div class="au-facet"><div class="au-facet-k cause">Корневая причина</div><div class="au-facet-v">Контент: подача не адаптирована под чат (простыня, невычитанные названия). Логика: непоследовательная навигация — чтобы посмотреть соседний вопрос, приходится заново проходить всё дерево.</div></div>
+          </div>
+          <div class="au-thumbs">
+            <img class="au-thumb" src="/static/img/audit/screen_1.jpeg" alt="Настройка аккаунта — скрин 1" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_1_1.jpeg" alt="Настройка аккаунта — скрин 2" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_1_2.jpeg" alt="Настройка аккаунта — скрин 3" loading="lazy" />
+          </div>
+        </article>
+
+        <article class="au-card">
+          <div class="au-head">
+            <span class="au-num">2</span>
+            <span class="au-title">Расскажите о функциях приложения</span>
+            <span class="au-tags"><span class="au-tag logic">Логика</span><span class="au-tag content">Контент</span></span>
+          </div>
+          <div class="au-facets">
+            <div class="au-facet"><div class="au-facet-k">Что происходит</div><div class="au-facet-v">Та же простыня текст+скриншоты (значит, это системная проблема подачи, а не разовая). На вопрос «Как работает „Статистика приложений“» — ответ-извинение «мы пока отключили статистику» вместо ответа. На жалобу «Ограничения не работают» — заглушка «приложение может работать нестабильно» и инструкция… по удалению MDM-профиля Kids360 с телефона ребёнка. На жалобу «ваш продукт не работает» бот отвечает «вот как его отключить».</div></div>
+            <div class="au-facet"><div class="au-facet-k break">Где ломается</div><div class="au-facet-v">Самая жёсткая точка: после этой заглушки бот автоматически завершает диалог — «Ваш разговор завершен». Без кнопок навигации, без «помогло / не получилось», без предложения оператора. Пользователь с реальной проблемой брошен ровно в момент, когда о ней заявил.</div></div>
+            <div class="au-facet"><div class="au-facet-k cause">Корневая причина</div><div class="au-facet-v">Логика: сценарий сам обрывает диалог после жалобы. Контент: в моменты сбоев ответы подменяются заглушками, не отвечающими на вопрос.</div></div>
+          </div>
+          <div class="au-thumbs">
+            <img class="au-thumb" src="/static/img/audit/screen_2_1.jpeg" alt="Функции — скрин 1" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_2_1_1.jpeg" alt="Функции — скрин 2" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_2_2.jpeg" alt="Функции — скрин 3" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_2_3.jpeg" alt="Функции — скрин 4" loading="lazy" />
+          </div>
+        </article>
+
+        <article class="au-card">
+          <div class="au-head">
+            <span class="au-num">3</span>
+            <span class="au-title">Вопросы по оплате → возврат средств</span>
+            <span class="au-tags"><span class="au-tag ai">Нужен AI</span><span class="au-tag logic">Логика</span><span class="au-tag content">Контент</span></span>
+          </div>
+          <div class="au-facets">
+            <div class="au-facet"><div class="au-facet-k">Что происходит</div><div class="au-facet-v">Пишу «Хочу оформить возврат». Бот, не задав ни одного вопроса о причине, сразу отказывает: цитирует пункт 11.13 условий — возврат за неиспользованное время подписки невозможен — и предлагает отменить подписку. Обоснование вставлено картинкой-скриншотом правил, которая к тому же может не прогрузиться: тогда родитель видит «возврат не получится» и пустое место вместо объяснения. Сам сценарий возврата спрятан за кнопкой «Хочу отменить подписку», и первый вопрос бота — «уточните банк, с карты которого списались средства».</div></div>
+            <div class="au-facet"><div class="au-facet-k break">Где ломается</div><div class="au-facet-v">Три точки. (1) Отказ не по тому основанию: пункт 11.13 — про неиспользованное время, а причина пользователя не выяснена. Двойное списание, ошибочный платёж, списание после отмены под этот пункт не подпадают — но родитель этого не знает, верит «возврат невозможен» и уходит с дважды списанными деньгами. (2) Не тот вопрос: для процедуры возврата важен канал подписки (App Store / Google Play / оператор) — у каждого своя процедура, — а не банк карты. (3) Дальше бот перекладывает работу на пользователя: инструкция из четырёх шагов «сходи в приложение банка и добудь чек» (P1); кнопки прикрепления рядом с просьбой нет — файл нужно догадаться приложить через общий «+» в поле ввода (P2); приложенный чек уходит оператору, который вручную читает сумму, дату и назначение платежа (P3).</div></div>
+            <div class="au-facet"><div class="au-facet-k cause">Корневая причина</div><div class="au-facet-v">Корневая причина — не «мало AI», а неправильно устроенная форма + два места, где кнопки принципиально бессильны. Кнопочное дерево само по себе не может: (1) прочитать чек — это должен делать AI-vision вместо оператора; (2) разобрать нестандартный свободный запрос пользователя. А вот вести человека по процедуре кнопки как раз могут — если форма правильная: сначала выясняет причину и канал, а отказ по п. 11.13 применяет только к возврату за неиспользованное время, а не ко всем обращениям. Старый бот ошибался в устройстве формы (не тот первый вопрос, отказ не по тому основанию, спрятанная загрузка) и перекладывал чтение чека на оператора. Решение: правильная детерминированная форма + AI точечно там, где кнопки не работают (чтение чека и понимание свободного текста).</div></div>
+          </div>
+          <div class="au-thumbs">
+            <img class="au-thumb" src="/static/img/audit/screen_3.jpeg" alt="Возврат — скрин 1" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_3_1.jpeg" alt="Возврат — скрин 2" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_3_1_1.jpeg" alt="Возврат — скрин 3" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_3_2.jpeg" alt="Возврат — скрин 4" loading="lazy" />
+            <img class="au-thumb" src="/static/img/audit/screen_3_2_1.jpeg" alt="Возврат — скрин 5" loading="lazy" />
+          </div>
+        </article>
+
+      </div>
+
+      <div class="au-final">
+        <h3>Главная и, как мне кажется, очень чувствительная для клиента ветка&nbsp;— возврат средств при двойном списании</h3>
+        <p>Ветки 1 и 2 чинятся правками контента и навигации — AI там не обязателен. Ветка возврата — единственная, где кнопочная механика не решает задачу в принципе, и цена ошибки максимальна: речь о деньгах родителя. Сегодня родитель просит возврат при двойном списании, а бот заставляет вручную выбрать банк карты, загрузить скриншот — и чек уходит оператору на ручную обработку, где человек сам вычитывает сумму, дату и сверяет их с биллингом.</p>
+        <div class="au-solution">
+          <div class="au-solution-label">Наше решение</div>
+          <b>Penny 2.0 переворачивает это:</b> родитель просто прикладывает скриншот, AI сам считывает сумму, дату и канал оплаты, сверяет с биллингом Kids360, что по этому аккаунту действительно прошло два списания, и отдаёт оператору готовый вывод — тому остаётся подтвердить или отклонить, а не разбираться с нуля. Апрув остаётся за человеком, потому что речь о деньгах.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Часть 2 — Проектирование ═══════════ -->
+    <section id="design">
+      <div class="kicker">Часть 2</div>
+      <h2>Проектирование новой ветки</h2>
+      <p class="lead">Не конспект, а рабочая проработка ветки: ветвящаяся карта диалога, как устроена логика (форма + 2 LLM-точки + сверка с биллингом), метрики автоматизации и углублённые edge cases. Всё — на реальной базе знаний Kids360, без выдуманных фактов.</p>
+
+      <!-- Подблок 1 — Карта диалога -->
+      <div class="d-block">
+        <h3>1 · Карта диалога</h3>
+        <p class="d-lead">Основной путь — <b>форма-мастер на кнопках</b> (детерминированная, без LLM на каждом шаге). Свободный текст доступен всегда как запасной вход: LLM извлекает из него поля и возвращает пользователя в нужный шаг формы — не создаёт параллельный чат. LLM вызывается только в двух точках: <b>vision</b> (чтение чека) и <b>разбор свободного текста</b>. Ключевые решения — на <b>S1</b> (тип причины) и <b>S2</b> (канал).</p>
+
+        <ol class="flow2">
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S0</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Вход (форма-мастер)</div>
+              <div class="fstep-desc">Пользователь попадает в ветку возврата по кнопке в дереве поддержки — тема известна. Penny сразу начинает форму: «Помогу оформить заявку на возврат».</div>
+              <div class="fstep-sub">Свободный текст доступен всегда как запасной вход — LLM извлекает поля и возвращает в нужный шаг формы (не создаёт параллельный чат).</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S1</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Эмпатия + классификация причины <span class="fstep-badge">развилка по типу</span></div>
+              <div class="fstep-desc">Бот по-человечески реагирует и определяет ТИП проблемы — от него зависит, возможен ли возврат в принципе:</div>
+              <div class="fbranch">
+                <div class="fbranch-row"><span class="fchip">a</span><span>двойное / повторное списание</span></div>
+                <div class="fbranch-row"><span class="fchip">b</span><span>списание после отмены</span></div>
+                <div class="fbranch-row"><span class="fchip">c</span><span>ошибочный / незнакомый платёж</span></div>
+                <div class="fbranch-row"><span class="fchip">d</span><span>возврат за неиспользованное время</span></div>
+              </div>
+              <div class="fnote">Развилка: <b>(d)</b> — честно объяснить про п. 11.13 (за неиспользованное время, как правило, не возвращается) и предложить отмену. <b>(a)–(c)</b> под этот пункт НЕ подпадают → продолжаем к возврату (S2).</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S2</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Канал подписки <span class="fstep-badge">развилка по каналу</span></div>
+              <div class="fstep-desc">«Где оформлена подписка — App Store, Google Play или оператор?»</div>
+              <div class="fbranch">
+                <div class="fbranch-row"><span class="fchip">App Store</span><span>возврат только через Apple (reportaproblem.apple.com); Kids360 сопровождает и подтверждает операцию, но не возвращает напрямую</span></div>
+                <div class="fbranch-row"><span class="fchip">Google Play</span><span>возврат через Google Play / поддержку Kids360</span></div>
+                <div class="fbranch-row"><span class="fchip">Оператор</span><span>через оператора</span></div>
+              </div>
+              <div class="fstep-sub">Если пользователь не знает канал — бот помогает определить: «на каком устройстве оформляли — iPhone или Android?»</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S3</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Детали</div>
+              <div class="fstep-desc">Сколько списаний, суммы, примерные даты — собираем контекст для заявки.</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S4</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Чек <span class="fstep-badge">фикс UX</span></div>
+              <div class="fstep-desc">Направление к явной кнопке загрузки.</div>
+              <div class="fnote">Может приложить чек → S5. Не может / нет доступа → сбор данных текстом + пометка для оператора.</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S5</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Распознавание <span class="fstep-badge">vision</span></div>
+              <div class="fstep-desc">Извлечение: сумма, дата, назначение, банк / канал, confidence.</div>
+              <div class="fnote">confidence высокий → S6. Низкий / не чек → просьба переснять ИЛИ эскалация «чек нечитаем». Видно, что списание одно (а жаловались на два) → бот вежливо уточняет расхождение, не спорит.</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S6</span><span class="fstep-line"></span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Подтверждение</div>
+              <div class="fstep-desc">«Вижу N ₽ от DD.MM, назначение — Kids360, верно?»</div>
+              <div class="fstep-sub">Нет → уточнить / перезапросить.</div>
+            </div>
+          </li>
+
+          <li class="fstep">
+            <div class="fstep-rail"><span class="fstep-dot st">S7</span></div>
+            <div class="fstep-body">
+              <div class="fstep-title">Сверка с биллингом → заявка на апрув</div>
+              <div class="fstep-desc">Бэк <b>детерминированно (без LLM)</b> сверяет заявленное списание с биллингом Kids360 по account_id: реально ли по аккаунту прошло два списания. AI формирует готовый вердикт + структурированную заявку (тип причины, канал, данные чека, что подтвердил биллинг).</div>
+              <div class="fbranch">
+                <div class="fbranch-row"><span class="fchip">2 списания</span><span>двойное списание подтверждено → рекомендация «возврат»</span></div>
+                <div class="fbranch-row"><span class="fchip">1 списание</span><span>на ручную проверку оператору</span></div>
+              </div>
+              <div class="fstep-sub">Оператор получает готовую карточку и только <b>подтверждает или отклоняет</b> — не разбирается с нуля. Бот НЕ обещает возврат. <i>(В прототипе биллинг — демо-мок, реальной интеграции нет.)</i></div>
+            </div>
+          </li>
+
+        </ol>
+
+        <div class="fnote" style="margin-top:16px"><b>Сквозные переходы</b> (из любого состояния): запрос живого оператора → эскалация с уже собранным контекстом; агрессия / стресс → усиленная эмпатия, без обещаний; не-своя тема → мягкий возврат к сценарию или эскалация.</div>
+
+        <div class="d-key"><b>Ключевое отличие от старого бота:</b> старый на S1 сразу отказывал по п. 11.13 и на S2 спрашивал банк карты. Новый — сначала классифицирует причину и выясняет канал, а отказ по 11.13 применяет ТОЛЬКО к типу (d).</div>
+      </div>
+
+      <!-- Подблок 2 — Где живёт логика -->
+      <div class="d-block">
+        <h3>2 · Где живёт логика: форма, 2 LLM-точки и правила</h3>
+        <p class="d-lead">Тема «возврат» известна уже на входе — пользователь нажал пункт в дереве поддержки. Значит нужна быстрая процедура, а не беседа. Поэтому диалог — <b>детерминированная форма-мастер</b>, а LLM подключается точечно. Вот что где решается.</p>
+
+        <div class="d-tablewrap">
+          <table class="map">
+            <tr><th>Что</th><th>Где решается</th><th>LLM?</th></tr>
+            <tr><td>Порядок вопросов, тексты, ветвление (причина → канал → чек → подтверждение)</td><td>Детерминированная форма-мастер (фронт)</td><td>нет</td></tr>
+            <tr><td>Понимание свободного текста → поля формы</td><td><code>INTERPRET_PROMPT</code> — строгий JSON, низкая температура</td><td><b>да</b></td></tr>
+            <tr><td>Чтение чека (сумма / дата / канал)</td><td>vision <code>RECOGNIZE_PROMPT</code></td><td><b>да</b></td></tr>
+            <tr><td>Сверка двойного списания + вердикт</td><td>Правила по биллингу (<code>/api/verify</code>, демо-мок)</td><td>нет</td></tr>
+            <tr><td>Апрув возврата</td><td>Человек-оператор</td><td>—</td></tr>
+          </table>
+        </div>
+
+        <p class="d-lead" style="margin-top:16px;margin-bottom:8px">Принципы старого промпта никуда не делись — но теперь они <b>гарантированы конструкцией</b>, а не «надеждой на генерацию»:</p>
+
+        <div class="d-rule">
+          <div class="rule">Сначала причина и канал — потом ответ про возможность возврата</div>
+          <div class="kv pos"><span class="k">Как:</span> порядком шагов формы (детерминированно). Отказ по п. 11.13 применяется только к типу «за неиспользованное время». Старый бот отказывал по 11.13 без выяснения причины — здесь это в принципе невозможно.</div>
+        </div>
+        <div class="d-rule">
+          <div class="rule">Никогда не обещать возврат</div>
+          <div class="kv pos"><span class="k">Как:</span> зашито в тексты формы и в промпт разбора; решение и апрув — за оператором.</div>
+        </div>
+        <div class="d-rule">
+          <div class="rule">Не верить на слово о двойном списании</div>
+          <div class="kv pos"><span class="k">Как:</span> сверка с биллингом Kids360 по account_id — детерминированные правила, а не генерация. AI даёт вердикт, человек апрувит.</div>
+        </div>
+        <div class="d-rule">
+          <div class="rule">Грунтинг, без данных карты, эскалация с контекстом</div>
+          <div class="kv pos"><span class="k">Как:</span> разбор свободного текста грунтуется на базе знаний Kids360 и не просит CVV/пароли; просьба о человеке из любого шага → передача оператору с уже собранными полями.</div>
+        </div>
+
+        <div class="d-key">LLM намеренно ограничен ровно двумя задачами — <b>прочитать чек</b> и <b>понять свободный текст</b> — именно чтобы не словить три типичных провала LLM в поддержке: <b>галлюцинация фактов</b>, <b>обещания сверх полномочий</b>, <b>соскальзывание в не-свою тему</b>. Всё, что касается денег (вопросы, ветвление, сверка, вердикт), — детерминированно.</div>
+        <p class="d-lead" style="margin-top:12px;margin-bottom:0">Промпты — в <code>app/prompts.py</code> (<code>INTERPRET_PROMPT</code>) и <code>app/llm.py</code> (<code>RECOGNIZE_PROMPT</code>); правила биллинга — <code>app/billing.py</code>; база знаний — <code>app/knowledge_base.py</code>.</p>
+      </div>
+
+      <!-- Подблок 3 — Метрики -->
+      <div class="d-block">
+        <h3>3 · Метрики успеха ветки</h3>
+        <p class="d-lead">Как измерять, что автоматизация работает. Ориентиры — гипотеза, уточняется на данных.</p>
+        <div class="d-tablewrap">
+          <table class="map">
+            <tr><th>Метрика</th><th>Что показывает</th><th>Как считаем</th><th>Ориентир</th></tr>
+            <tr><td><b>Deflection rate</b><br>(доля автозакрытых)</td><td>какая часть обращений по возврату закрыта ботом без оператора</td><td>закрытые ботом / все обращения ветки</td><td>гипотеза: рост к 40–60% на типовых кейсах</td></tr>
+            <tr><td><b>Точность распознавания чека</b></td><td>верно ли извлечены сумма / дата / канал</td><td>доля чеков с корректными полями (ручная сверка на выборке)</td><td>гипотеза: ≥ 90% на читаемых чеках</td></tr>
+            <tr><td><b>Корректность классификации причины</b></td><td>верно ли кейс отнесён к (a)–(d)</td><td>сверка на выборке</td><td>критично: от этого зависит, не откажут ли ошибочно</td></tr>
+            <tr><td><b>Доля ложных эскалаций</b></td><td>бот эскалировал то, что мог закрыть сам</td><td>ложные эскалации / все эскалации</td><td>минимизируем, но осторожно</td></tr>
+            <tr><td><b>Доля ложных автозакрытий</b><br>(критичная)</td><td>бот закрыл то, что требовало человека</td><td>выборочный аудит</td><td>держать около нуля — цена ошибки высока</td></tr>
+            <tr><td><b>CSAT по ветке</b></td><td>оценка родителя после диалога</td><td>опрос в конце</td><td>не должен падать из-за автоматизации</td></tr>
+            <tr><td><b>Время до первого осмысленного ответа</b></td><td>скорость vs старый кнопочный флоу</td><td>замер по логам</td><td>заметно быстрее</td></tr>
+            <tr><td><b>Точность вердикта по биллингу</b></td><td>верно ли AI определил двойное списание (совпадение с фактом)</td><td>сверка вердикта с реальными списаниями на выборке</td><td>критично: от этого зависит правильность апрува</td></tr>
+          </table>
+        </div>
+        <div class="d-key"><b>Приоритет:</b> в детском платёжном сервисе «доля ложных автозакрытий» и «корректность классификации» важнее максимального deflection. Лучше передать человеку лишнее, чем ошибочно отказать в возврате — это осознанный продуктовый выбор.</div>
+      </div>
+
+      <!-- Подблок 4 — Edge cases -->
+      <div class="d-block">
+        <h3>4 · Edge cases</h3>
+        <p class="d-lead">Ситуация → риск → решение (в форме / правилах / логике).</p>
+
+        <div class="edge"><b>1. Сразу шлёт чек без текста</b>
+          <div class="kv neg"><span class="k">Риск:</span> бот не знает канал / причину.</div>
+          <div class="kv pos"><span class="k">Решение:</span> после распознавания всё равно уточняет канал и тип причины, не пропускает классификацию.</div>
+        </div>
+        <div class="edge"><b>2. Чек нечитаемый / не чек (скрин игры, фото экрана)</b>
+          <div class="kv neg"><span class="k">Риск:</span> бот распознает мусор.</div>
+          <div class="kv pos"><span class="k">Решение:</span> при низком confidence не додумывает — просит переснять или эскалирует «чек нечитаем»; на «не чек» вежливо поясняет, что нужен документ об операции.</div>
+        </div>
+        <div class="edge"><b>3. Эмоциональный / агрессивный пользователь</b>
+          <div class="kv neg"><span class="k">Риск:</span> бот либо обещает возврат (нельзя), либо холоден.</div>
+          <div class="kv pos"><span class="k">Решение:</span> усиленная эмпатия + честность без обещаний; при агрессии / просьбе человека — из любого шага передача оператору с уже собранным контекстом.</div>
+        </div>
+        <div class="edge"><b>4. Канал — App Store</b>
+          <div class="kv neg"><span class="k">Риск:</span> бот технически не может вернуть.</div>
+          <div class="kv pos"><span class="k">Решение:</span> честно объясняет про Apple (reportaproblem.apple.com), но фиксирует обращение и подтверждает операцию — сопровождает, а не «отфутболивает».</div>
+        </div>
+        <div class="edge"><b>5. Возврат за неиспользованное время (тип d)</b>
+          <div class="kv neg"><span class="k">Риск:</span> пользователь ждёт возврат, а по п. 11.13 не положено.</div>
+          <div class="kv pos"><span class="k">Решение:</span> честно и мягко объясняет ограничение, предлагает отмену, не создаёт ложных ожиданий; но проверяет, точно ли это (d), а не замаскированное двойное списание.</div>
+        </div>
+        <div class="edge"><b>6. OpenAI / vision недоступен (сбой API)</b>
+          <div class="kv neg"><span class="k">Риск:</span> бот «падает» молча.</div>
+          <div class="kv pos"><span class="k">Решение:</span> graceful degradation — сообщает, что распознавание временно недоступно, просит описать чек текстом (сумма / дата / канал) или эскалирует; диалог не рвётся.</div>
+        </div>
+        <div class="edge"><b>7. Чек на иностранном языке / другая валюта</b>
+          <div class="kv neg"><span class="k">Риск:</span> неверный парсинг.</div>
+          <div class="kv pos"><span class="k">Решение:</span> vision извлекает как есть + помечает валюту; если валюта не ₽ — бот уточняет и передаёт оператору с пометкой.</div>
+        </div>
+        <div class="edge"><b>8. Клиент заявил два списания, а биллинг подтверждает одно</b>
+          <div class="kv neg"><span class="k">Риск:</span> авто-отказать правому или ошибочно вернуть.</div>
+          <div class="kv pos"><span class="k">Решение:</span> сверка с биллингом даёт вердикт «на ручную проверку» (needs_review) — не авто-решаем; оператор получает и чек, и данные биллинга и решает сам. Бот не спорит с клиентом, а честно передаёт на проверку.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Часть 3 — Прототип ═══════════ -->
+    <section id="prototype">
+      <div class="kicker">Часть 3</div>
+      <h2>Живой прототип</h2>
+      <p class="lead">Та же Penny, что в приложении, — но теперь это <b>умный сборщик заявки</b>: короткая
+         форма-мастер на кнопках ведёт по процедуре, а свободный текст можно писать в любой момент.
+         LLM работает <b>точечно</b> — только чтение чека (vision) и разбор свободного текста; кнопочные
+         шаги токены не тратят. Попробуйте пройти по кнопкам или напишите «списали дважды в App Store».</p>
+
+      <!-- ── Два зеркальных окна: слева клиент, справа оператор ── -->
+      <div class="duo">
+        <div class="duo-col">
+          <div class="duo-label">👨‍👩‍👧 Клиент — чат в приложении Kids360</div>
+          <div class="phone" id="phone-client">
+            <div class="pn-head">
+              <button class="pn-round" title="Назад" aria-hidden="true">‹</button>
+              <div class="pn-avatars"><span>🧑</span><span>🐧</span><span>👩</span></div>
+              <div class="pn-title">Support</div>
+              <span class="spacer"></span>
+              <button class="pn-round" title="Закрыть" aria-hidden="true">×</button>
+            </div>
+            <div class="pn-msgs" id="messages">
+              <div class="pn-sub">Поможем найти ответ на ваш вопрос</div>
+            </div>
+            <div id="escalation-slot"></div>
+            <div class="pn-input">
+              <button class="pn-attach" id="attachBtn" title="Прикрепить скриншот чека">📎 Чек</button>
+              <input type="file" id="fileInput" accept="image/*" hidden />
+              <div class="pn-field">
+                <textarea id="input" rows="1" placeholder="Ваше сообщение…"></textarea>
+              </div>
+              <button class="pn-send" id="sendBtn" title="Отправить">➤</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="duo-col">
+          <div class="duo-label">🎧 Оператор — панель поддержки</div>
+          <div class="phone" id="phone-operator">
+            <div class="pn-head">
+              <div class="pn-round" aria-hidden="true">🎧</div>
+              <div class="pn-title">Оператор · Kids360</div>
+              <span class="spacer"></span>
+              <span class="op-status">● онлайн</span>
+            </div>
+            <div class="pn-msgs" id="op-messages">
+              <div class="pn-sub">Ожидаю готовую заявку от Penny…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="proto-note">
+        Слева — что видит родитель, справа — что получает оператор (заявка + вердикт на апрув). В реальности это разные интерфейсы; здесь показаны рядом, чтобы видеть, как AI собирает решение, а человек только подтверждает.<br>
+        Кнопочные шаги — <b>без вызовов LLM</b>. LLM только в двух точках: <code>POST /api/recognize</code>
+        (vision) и <code>POST /api/chat</code> (свободный текст). Ключ OpenAI — только в <code>.env</code> на сервере.
+      </p>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="wrap">Penny 2.0 · прототип AI-поддержки Kids360 · ветка возврата средств</div>
+  </footer>
+
+  <!-- Лайтбокс-галерея для скриншотов аудита -->
+  <div class="lb" id="lightbox">
+    <button class="lb-close" id="lbClose" aria-label="Закрыть">×</button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Предыдущий">‹</button>
+    <img id="lbImg" src="" alt="Скриншот" />
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Следующий">›</button>
+    <div class="lb-count" id="lbCount"></div>
+  </div>
+
+  <script>
+    // ===== Лайтбокс-галерея для скриншотов аудита =====
+    (function () {
+      const lb = document.getElementById("lightbox");
+      const lbImg = document.getElementById("lbImg");
+      const lbClose = document.getElementById("lbClose");
+      const lbPrev = document.getElementById("lbPrev");
+      const lbNext = document.getElementById("lbNext");
+      const lbCount = document.getElementById("lbCount");
+      let group = []; // src'ы миниатюр текущей ленты
+      let idx = 0;
+
+      function show(i) {
+        if (!group.length) return;
+        idx = (i + group.length) % group.length; // зацикливаем
+        lbImg.src = group[idx];
+        const many = group.length > 1;
+        lbPrev.hidden = !many;
+        lbNext.hidden = !many;
+        lbCount.hidden = !many;
+        lbCount.textContent = (idx + 1) + " / " + group.length;
+      }
+      function openFrom(thumb) {
+        const strip = thumb.closest(".au-thumbs");
+        const thumbs = strip ? Array.from(strip.querySelectorAll(".au-thumb")) : [thumb];
+        group = thumbs.map((t) => t.src);
+        show(thumbs.indexOf(thumb));
+        lb.classList.add("open");
+      }
+      function closeLb() { lb.classList.remove("open"); lbImg.src = ""; group = []; }
+
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest(".au-thumb");
+        if (t) openFrom(t);
+      });
+      lbPrev.addEventListener("click", (e) => { e.stopPropagation(); show(idx - 1); });
+      lbNext.addEventListener("click", (e) => { e.stopPropagation(); show(idx + 1); });
+      lbClose.addEventListener("click", closeLb);
+      lb.addEventListener("click", (e) => { if (e.target === lb) closeLb(); });
+      document.addEventListener("keydown", (e) => {
+        if (!lb.classList.contains("open")) return;
+        if (e.key === "Escape") closeLb();
+        else if (e.key === "ArrowLeft") show(idx - 1);
+        else if (e.key === "ArrowRight") show(idx + 1);
+      });
+      // свайп на тач-устройствах
+      let sx = null;
+      lb.addEventListener("touchstart", (e) => { sx = e.touches[0].clientX; }, { passive: true });
+      lb.addEventListener("touchend", (e) => {
+        if (sx === null) return;
+        const dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 40) show(idx + (dx < 0 ? 1 : -1));
+        sx = null;
+      }, { passive: true });
+    })();
+
+    // ===== ФОРМА-МАСТЕР Penny 2.0 =====
+    // Диалог — детерминированная машина состояний на кнопках. LLM вызывается только в двух точках:
+    //   1) vision — распознавание чека (/api/recognize);
+    //   2) свободный текст — разбор в поля формы (/api/chat). Кнопочные шаги LLM НЕ трогают.
+    (function () {
+      const el = {
+        messages: document.getElementById("messages"),
+        input: document.getElementById("input"),
+        sendBtn: document.getElementById("sendBtn"),
+        attachBtn: document.getElementById("attachBtn"),
+        fileInput: document.getElementById("fileInput"),
+        escalationSlot: document.getElementById("escalation-slot"),
+      };
+
+      // Окно ОПЕРАТОРА (правое) — сюда падают заявка и карточка апрува, зеркаля клиентский поток.
+      const opMsgs = document.getElementById("op-messages");
+      function opAppend(node){
+        const ph = opMsgs.querySelector(".pn-sub"); if (ph) ph.remove();
+        opMsgs.appendChild(node);
+        opMsgs.scrollTop = opMsgs.scrollHeight;
+      }
+      function makeOpSys(text){ const dv = document.createElement("div"); dv.className = "op-sys"; dv.textContent = text; return dv; }
+
+      // Состояние формы — единственный источник правды. И кнопки, и текст заполняют его же (один флоу).
+      const form = {
+        reason: null, channel: null, amount: null, date: null, purpose: null,
+        confidence: null, receipt_skipped: false, confirmed: false, verified: false, verdict: null, wants_human: false, done: false,
+      };
+      let busy = false;
+      let step = "start";
+
+      const REASON_LABEL = { double: "Списали дважды", after_cancel: "Списание после отмены", unknown_charge: "Не узнаю платёж", unused_time: "Возврат за неиспользованное время" };
+      const CHANNEL_LABEL = { appstore: "App Store", googleplay: "Google Play", operator: "Оператор" };
+      const CHANNEL_INFO = {
+        appstore: "Возврат по покупкам App Store оформляется через Apple — reportaproblem.apple.com. Kids360 сопровождает и подтверждает операцию, но не возвращает напрямую.",
+        googleplay: "Возврат оформляется через Google Play или поддержку Kids360.",
+        operator: "Возврат оформляется через вашего оператора связи.",
+      };
+
+      // ---------- рендер ----------
+      function esc(s){ return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+      function scrollDown(){ el.messages.scrollTop = el.messages.scrollHeight; }
+      function setBusy(state){
+        busy = state;
+        el.sendBtn.disabled = state; el.attachBtn.disabled = state; el.input.disabled = state;
+        el.messages.querySelectorAll(".pn-chip").forEach(c => c.disabled = state);
+      }
+      function botRow(){
+        const row = document.createElement("div"); row.className = "pn-row bot";
+        row.innerHTML = `<div class="pn-bot-name"><span class="ava">🐧</span><b>Penny</b><span class="dotsep">•</span><span class="role">AI Agent</span></div>`;
+        return row;
+      }
+      function addBot(text){
+        const row = botRow(); const b = document.createElement("div"); b.className = "pn-bubble"; b.textContent = text;
+        row.appendChild(b); el.messages.appendChild(row); scrollDown(); return row;
+      }
+      function addUser(text){
+        const row = document.createElement("div"); row.className = "pn-row user";
+        const b = document.createElement("div"); b.className = "pn-bubble"; b.textContent = text;
+        row.appendChild(b); el.messages.appendChild(row); scrollDown();
+      }
+      function addUserImage(dataUrl){
+        const row = document.createElement("div"); row.className = "pn-row user";
+        const b = document.createElement("div"); b.className = "pn-bubble";
+        const img = document.createElement("img"); img.className = "shot"; img.src = dataUrl; b.appendChild(img);
+        row.appendChild(b); el.messages.appendChild(row); scrollDown();
+      }
+      function addTyping(text){
+        const row = botRow(); row.classList.add("pn-typing");
+        const b = document.createElement("div"); b.className = "pn-bubble"; b.textContent = text;
+        row.appendChild(b); el.messages.appendChild(row); scrollDown(); return row;
+      }
+      // группа кнопок-вариантов (активна только одна за раз)
+      function addChoices(options){
+        const old = el.messages.querySelector(".pn-chips.active"); if (old) old.remove();
+        const wrap = document.createElement("div"); wrap.className = "pn-chips active";
+        options.forEach(o => {
+          const btn = document.createElement("button"); btn.className = "pn-chip"; btn.textContent = o.label;
+          btn.addEventListener("click", () => { if (busy) return; wrap.remove(); addUser(o.label); o.onPick(); });
+          wrap.appendChild(btn);
+        });
+        el.messages.appendChild(wrap); scrollDown();
+      }
+      function showEscalation(){
+        el.escalationSlot.innerHTML = `<div class="pn-escalation">🔔 Передаю ваш вопрос живому специалисту поддержки — он скоро подключится.</div>`;
+      }
+      function genNumber(){ return "KID-" + String(Date.now()).slice(-6) + "-" + Math.floor(Math.random() * 90 + 10); }
+
+      function addReceiptCard(data){
+        const row = botRow(); const card = document.createElement("div"); card.className = "pn-receipt";
+        const conf = Math.round((Number(data.confidence) || 0) * 100);
+        const rows = [["Сумма", data.amount], ["Дата", data.date], ["Назначение", data.purpose], ["Банк / канал", data.bank_or_channel]]
+          .filter(([, v]) => v)
+          .map(([k, v]) => `<div class="r"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
+        card.innerHTML = `<div class="t">🧾 Прочитал ваш чек</div>` +
+          (rows || `<div class="r"><span class="k">Не удалось разобрать данные чётко</span></div>`) +
+          `<div class="c">Уверенность распознавания: ${conf}%</div>`;
+        row.appendChild(card); el.messages.appendChild(row); scrollDown();
+      }
+      // Заявка от Penny (AI) — падает в окно ОПЕРАТОРА (правое).
+      function addRequestCard(num, note){
+        const card = document.createElement("div"); card.className = "pn-receipt";
+        const rows = [
+          ["Заявка №", num],
+          ["Тип причины", REASON_LABEL[form.reason] || "—"],
+          ["Канал", CHANNEL_LABEL[form.channel] || "—"],
+          ["Сумма", form.amount || "—"],
+          ["Дата", form.date || "—"],
+          ["Назначение", form.purpose || "—"],
+          ["Чек", form.confirmed ? "подтверждён пользователем" : (form.receipt_skipped ? "данные текстом" : "—")],
+        ].map(([k, v]) => `<div class="r"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
+        card.innerHTML = `<div class="t">📨 Заявка от Penny (AI)</div>` + rows + (note ? `<div class="c">${esc(note)}</div>` : ``);
+        opAppend(card);
+      }
+
+      // ---------- шаги формы (детерминированные, без LLM) ----------
+      function goReason(){
+        step = "reason";
+        addBot("С чем связано обращение? Выберите вариант — или напишите своими словами.");
+        addChoices([
+          { label: "Списали дважды", onPick: () => pickReason("double") },
+          { label: "Списали после отмены", onPick: () => pickReason("after_cancel") },
+          { label: "Не узнаю платёж", onPick: () => pickReason("unknown_charge") },
+          { label: "Хочу вернуть за неиспользованное время", onPick: () => pickReason("unused_time") },
+        ]);
+      }
+      function pickReason(v){ form.reason = v; routeNext(); }
+      function goUnusedTime(){
+        step = "unused_time";
+        addBot("По условиям Kids360 (п. 11.13) возврат за неиспользованное время подписки, как правило, не предусмотрен. Обычно в этом случае оформляют отмену — подписка продолжит действовать до конца оплаченного периода. Если считаете случай особым, могу передать заявку специалисту.");
+        addChoices([
+          { label: "Всё равно передать специалисту", onPick: () => escalate("Возврат за неиспользованное время — пользователь просит рассмотреть индивидуально.") },
+          { label: "Понятно, спасибо", onPick: () => { addBot("Хорошо! Отменить подписку можно в настройках App Store или Google Play. Если понадобится — возвращайтесь. 💛"); step = "closed"; } },
+        ]);
+      }
+      function goChannel(){
+        step = "channel";
+        addBot("Где оформлена подписка?");
+        addChoices([
+          { label: "App Store", onPick: () => pickChannel("appstore") },
+          { label: "Google Play", onPick: () => pickChannel("googleplay") },
+          { label: "Оператор", onPick: () => pickChannel("operator") },
+          { label: "Не знаю", onPick: () => goDevice() },
+        ]);
+      }
+      function pickChannel(v){ form.channel = v; routeNext(); }
+      function goDevice(){
+        step = "device";
+        addBot("На каком устройстве оформляли подписку?");
+        addChoices([
+          { label: "iPhone / iPad", onPick: () => pickChannel("appstore") },
+          { label: "Android", onPick: () => pickChannel("googleplay") },
+          { label: "Через оператора связи", onPick: () => pickChannel("operator") },
+        ]);
+      }
+      function goReceipt(){
+        step = "receipt";
+        addBot("Приложите, пожалуйста, скриншот чека или справки об операции — я прочитаю его сам. Нажмите «📎 Чек» внизу.");
+        addChoices([{ label: "Не могу приложить", onPick: () => { form.receipt_skipped = true; routeNext(); } }]);
+      }
+      function goManual(){
+        step = "manual";
+        addBot("Хорошо. Напишите текстом сумму и примерную дату списания — передам специалисту.");
+      }
+      function goConfirm(){
+        step = "confirm";
+        addBot(`Вижу: ${form.amount || "—"}${form.date ? `, от ${form.date}` : ""}${form.purpose ? `, назначение — ${form.purpose}` : ""}. Всё верно?`);
+        addChoices([
+          { label: "Да, верно", onPick: () => { form.confirmed = true; routeNext(); } },
+          { label: "Нет, переснять", onPick: () => { form.amount = form.date = form.purpose = form.confidence = null; form.confirmed = false; routeNext(); } },
+        ]);
+      }
+      // Сверка с биллингом Kids360 (детерминированный демо-мок на бэке, БЕЗ LLM)
+      async function goVerify(){
+        if (!form.amount) return goDone();  // нечего сверять — сразу заявка
+        step = "verify";
+        setBusy(true);
+        const typing = addTyping("Секунду, сверяю с биллингом Kids360…");
+        try {
+          const resp = await fetch("/api/verify", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: form.amount, date: form.date, channel: form.channel, reason: form.reason }),
+          });
+          form.verdict = await resp.json();
+        } catch (e) { form.verdict = null; }
+        finally { typing.remove(); setBusy(false); }
+        form.verified = true;
+        goDone();
+      }
+      function goDone(){
+        step = "done"; form.done = true;
+        const v = form.verdict;
+        if (v && v.charges_found >= 2) {
+          addBot(`Проверил: в биллинге по вашему аккаунту действительно ${v.charges_found} списания на эту сумму. Передаю специалисту готовый вывод на подтверждение.`);
+        } else if (v && v.charges_found === 1) {
+          addBot("Проверил биллинг: пока вижу одно списание. Передаю специалисту с деталями — он проверит вручную и вернётся к вам.");
+        } else {
+          addBot("Готово! Собрал заявку и передаю специалисту — он рассмотрит обращение и примет решение по возврату.");
+        }
+        if (form.channel && CHANNEL_INFO[form.channel]) addBot(CHANNEL_INFO[form.channel]);
+        // Оператору (правое окно) — заявка + вердикт на апрув.
+        opAppend(makeOpSys("🔔 Новая заявка от Penny (AI)"));
+        addRequestCard(genNumber());
+        if (v) addOperatorCard(v);
+      }
+      // Демонстрация: карточка, которую оператор получает на апрув (его интерфейс)
+      function addOperatorCard(v){
+        const row = botRow(); const card = document.createElement("div"); card.className = "pn-receipt op-card";
+        const VLABEL = { double_charge_confirmed: "двойное списание подтверждено", single_charge_only: "найдено одно списание", no_charge_found: "списаний не найдено" };
+        const RLABEL = { refund: "оформить возврат", needs_review: "ручная проверка" };
+        const rows = [
+          ["Канал", CHANNEL_LABEL[form.channel] || "—"],
+          ["Чек (vision)", `${form.amount || "—"}${form.date ? " · " + form.date : ""}`],
+          ["Биллинг", `списаний: ${v.charges_found}${v.amount_matches ? " · сумма совпала ✓" : ""}`],
+          ["Вердикт AI", VLABEL[v.verdict] || v.verdict],
+          ["Рекомендация", RLABEL[v.recommendation] || v.recommendation],
+        ].map(([k, x]) => `<div class="r"><span class="k">${esc(k)}</span><span class="v">${esc(x)}</span></div>`).join("");
+        card.innerHTML = `<div class="t">🔎 На апрув оператору <span class="demo">демо</span></div>` + rows;
+        const act = document.createElement("div"); act.className = "op-actions";
+        const approve = document.createElement("button"); approve.className = "op-btn approve"; approve.textContent = "Подтвердить возврат";
+        const reject = document.createElement("button"); reject.className = "op-btn reject"; reject.textContent = "Отклонить";
+        // Решение оператора зеркалится в клиентский чат.
+        approve.addEventListener("click", () => {
+          act.remove();
+          opAppend(makeOpSys("✅ Оператор подтвердил возврат"));
+          addBot("✅ Специалист подтвердил возврат — вы получите уведомление о зачислении средств. Спасибо, что написали! 💛");
+        });
+        reject.addEventListener("click", () => {
+          act.remove();
+          opAppend(makeOpSys("Оператор отклонил — нужна доп. проверка"));
+          addBot("Специалист посмотрел заявку и хочет уточнить детали — он скоро свяжется с вами.");
+        });
+        act.appendChild(approve); act.appendChild(reject); card.appendChild(act);
+        opAppend(card);
+      }
+      function escalate(note){
+        step = "escalated"; form.wants_human = true;
+        showEscalation(); // плашка в клиентском окне
+        opAppend(makeOpSys("🔔 Эскалация от Penny (AI)"));
+        addRequestCard(genNumber(), note || "Передано специалисту с собранным контекстом.");
+      }
+
+      // Единый маршрутизатор: и кнопки, и свободный текст ведут к следующему незаполненному шагу.
+      function routeNext(){
+        if (form.done || step === "escalated" || step === "closed") return; // терминальные состояния — флоу не переигрываем
+        if (form.wants_human) return escalate("Пользователь просил связаться с человеком.");
+        if (!form.reason) return goReason();
+        if (form.reason === "unused_time") return goUnusedTime();
+        if (!form.channel) return goChannel();
+        // причина и канал есть → работаем с чеком
+        if (form.amount && !form.confirmed) return goConfirm();
+        if (form.amount && form.confirmed && !form.verified) return goVerify();
+        if (form.receipt_skipped && !form.amount) return goManual();
+        if (!form.amount && !form.receipt_skipped) return goReceipt();
+        return goDone();
+      }
+
+      // ---------- свободный текст (LLM-точка №2) ----------
+      async function onSend(){
+        const text = el.input.value.trim();
+        if (!text || busy) return;
+        el.input.value = ""; autoGrow();
+        addUser(text);
+        if (form.done || step === "escalated" || step === "closed") {
+          addBot("Заявка уже передана специалисту — он свяжется с вами. Нужно новое обращение? Обновите страницу.");
+          return;
+        }
+        setBusy(true);
+        const typing = addTyping("печатает…");
+        try {
+          const resp = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, state: form }) });
+          const data = await resp.json();
+          typing.remove();
+          if (data.reason) form.reason = data.reason;
+          if (data.channel) form.channel = data.channel;
+          if (data.amount) form.amount = data.amount;
+          if (data.date) form.date = data.date;
+          if (data.wants_human) form.wants_human = true;
+          if (data.reply) addBot(data.reply);
+          routeNext();
+        } catch (e) {
+          typing.remove();
+          addBot("Похоже, пропала связь. Проверьте интернет и попробуйте ещё раз 🙏");
+        } finally { setBusy(false); }
+      }
+
+      // ---------- чек (LLM-точка №1: vision) ----------
+      async function handleFile(file){
+        if (!file || busy) return;
+        setBusy(true);
+        try {
+          try { const dataUrl = await fileToDataUrl(file); addUserImage(dataUrl); }
+          catch (e) { addBot("Не получилось прочитать файл. Опишите сумму и дату текстом — передам специалисту."); form.receipt_skipped = true; goManual(); return; }
+
+          const typing = addTyping("Секунду, читаю чек…");
+          let data;
+          try {
+            const fd = new FormData(); fd.append("file", file);
+            const resp = await fetch("/api/recognize", { method: "POST", body: fd });
+            data = await resp.json();
+          } catch (e) {
+            typing.remove();
+            addBot("Не получилось загрузить чек. Опишите сумму и дату текстом — передам специалисту.");
+            form.receipt_skipped = true; goManual(); return;
+          }
+          typing.remove();
+
+          if (data.error) {
+            addBot(data.error);
+            addChoices([{ label: "Передать специалисту как есть", onPick: () => escalate("Чек не распознан из-за ошибки, передан как есть.") }]);
+            return;
+          }
+          addReceiptCard(data);
+          const conf = Number(data.confidence) || 0;
+          if (conf < 0.4 || (!data.amount && !data.date)) {
+            addBot("Не удалось разобрать чек. Попробуйте переснять его целиком и чётко.");
+            addChoices([{ label: "Передать специалисту как есть", onPick: () => escalate("Чек нечитаем (низкий confidence), передан как есть.") }]);
+            return;
+          }
+          form.amount = data.amount || form.amount;
+          form.date = data.date || form.date;
+          form.purpose = data.purpose || form.purpose;
+          form.confidence = conf;
+          routeNext();  // если причина/канал ещё не выбраны — сначала классификация, потом подтверждение
+        } finally { setBusy(false); }
+      }
+      function fileToDataUrl(file){
+        return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+      }
+
+      // ---------- обвязка UI ----------
+      function autoGrow(){ el.input.style.height = "auto"; el.input.style.height = Math.min(el.input.scrollHeight, 96) + "px"; }
+      el.input.addEventListener("input", autoGrow);
+      el.input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } });
+      el.sendBtn.addEventListener("click", onSend);
+      el.attachBtn.addEventListener("click", () => el.fileInput.click());
+      el.fileInput.addEventListener("change", e => { const f = e.target.files[0]; el.fileInput.value = ""; handleFile(f); });
+
+      // ---------- старт: приветствие формы-мастера ----------
+      (async function init(){
+        let greeting = "Здравствуйте! Я Penny — помощник Kids360. Помогу оформить заявку на возврат — это займёт минуту.";
+        try { const r = await fetch("/api/config"); const cfg = await r.json(); if (cfg && cfg.greeting) greeting = cfg.greeting; } catch (e) { /* запасное приветствие */ }
+        addBot(greeting);
+        goReason();
+      })();
+    })();
+  </script>
+</body>
+</html>

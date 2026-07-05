@@ -1,0 +1,17 @@
+# --- Секреты: НИКОГДА не коммитим ключ OpenAI ---
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# OS
+.DS_Store
+
+# Внутренние рабочие заметки кандидата (не для публичного репозитория)
+EXECUTOR_PROMPT.md
+PIPELINE.md
+CLAUDE.md
