@@ -72,6 +72,10 @@
     ul, ol { padding-left: 22px; }
     li { margin: 6px 0; }
     a { color: var(--brand); }
+    /* Жирный текст делаем тёмным, чтобы выделялся на сером фоне текстовых блоков.
+       Светлый/цветной жирный (.au-final b — белый, .d-key b — синий, логотип) защищён
+       правилами с более высокой специфичностью и не затрагивается. */
+    b, strong { color: var(--penny-ink); }
 
     .cards { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
     @media (min-width: 640px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }
@@ -142,7 +146,7 @@
     .d-tablewrap table.map { min-width: 640px; }
     table.map { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
     table.map th, table.map td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    table.map th { color: var(--muted); font-weight: 600; }
+    table.map th { color: var(--penny-ink); font-weight: 600; }
 
     .edge { border-left: 3px solid var(--brand); background: var(--bg-soft); border-radius: 0 12px 12px 0; padding: 12px 16px; margin: 12px 0; }
     .edge b { display: block; margin-bottom: 4px; }
@@ -163,7 +167,7 @@
     .au-facets { margin-top: 12px; }
     .au-facet { display: grid; grid-template-columns: 138px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
     .au-facet:first-child { border-top: none; padding-top: 2px; }
-    .au-facet-k { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--muted); padding-top: 3px; }
+    .au-facet-k { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--penny-ink); padding-top: 3px; }
     .au-facet-k.break { color: #c0392b; }
     .au-facet-k.cause { color: var(--brand); }
     .au-facet-v { font-size: 14.5px; line-height: 1.5; }
@@ -318,7 +322,7 @@
     .duo { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
     .duo-col { flex: 1 1 380px; max-width: 440px; min-width: 300px; }
     .duo .phone { max-width: 100%; margin: 0; }
-    .duo-label { text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+    .duo-label { text-align: center; font-size: 13px; font-weight: 600; color: var(--penny-ink); margin-bottom: 8px; }
     .op-status { font-size: 12px; color: #34c759; font-weight: 600; }
     .op-sys { align-self: center; font-size: 12.5px; color: var(--muted); padding: 2px 8px; }
     /* Десктоп: два окна строго рядом, в один экран, без изменения масштаба.
